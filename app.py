@@ -1,42 +1,33 @@
-from flask import Flask, jsonify, request, abort
+from flask import Flask, jsonify
 from flask_cors import CORS
 
 app = Flask(__name__)
 CORS(app)
 
-# Az elérhető opciók a dropdown mezőhöz
-options = [
-    {"label": "Option 1", "value": "1"},
-    {"label": "Option 2", "value": "2"},
-    {"label": "Option 3", "value": "3"}
-]
+# Itt tároljuk a választható opciókat
+DROPDOWN_OPTIONS = {
+    "values": ["1", "2", "3"],
+    "labels": ["Option 1", "Option 2", "Option 3"]
+}
 
 @app.route('/dropdown', methods=['GET'])
 def get_dropdown():
     """
-    Visszaadja a lenyíló mező opcióit JSON formátumban.
+    Visszaadja a választható opciókat a változóból
     """
-    return jsonify({"options": options})
-
-@app.route('/select_option', methods=['POST'])
-def select_option():
-    """
-    Feldolgozza a felhasználó által kiválasztott opciót.
-    """
-    # Kiválasztott opció lekérése a kérésből
-    selected_value = request.json.get("selectedOption")
-    if not selected_value:
-        abort(400, description="Missing 'selectedOption' in request body")
-
-    # Ellenőrizzük, hogy az opció érvényes-e
-    if selected_value not in [option["value"] for option in options]:
-        abort(400, description="Invalid option selected")
-
-    # Visszatérünk egy megerősítéssel
     return jsonify({
-        "message": f"You selected: {selected_value}",
-        "selectedOption": selected_value
+        "type": "object",
+        "properties": {
+            "selectedOption": {
+                "type": "string",
+                "enum": DROPDOWN_OPTIONS["values"],
+                "x-enumLabels": DROPDOWN_OPTIONS["labels"],
+                "x-ui-widget": "dropdown",
+                "title": "Válassz egy opciót"
+            }
+        },
+        "required": ["selectedOption"]
     })
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, host='0.0.0.0', port=5000)
